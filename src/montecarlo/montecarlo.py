@@ -12,35 +12,35 @@ class MonteCarlo:
     def run(self, T: float, n_samples: int, n_burn: int = 100):
         
         bs = BitString(self.N)   # random starting bitstring configuration 
-        bs.set_config(list(np.random.randint(0, 2, self.N)))
-        curr_E = self.ham.energy(bs)
+        bs.set_config(list(np.random.randint(0, 2, self.N)))  # randomly initialize spins
+        currentE = self.ham.energy(bs)    # initial eneegy 
 
         for _ in range(n_burn): # burning values that dont affect real probability 
-            for i in range(self.N):
+            for i in range(self.N):    # loop over every spin site
                 bs.flip_site(i)
-                prop_E = self.ham.energy(bs)
-                dE = prop_E - curr_E
+                proposedE = self.ham.energy(bs)  # energy of flipped state 
+                dE = proposedE - currentE         # difference in energy between proposed and current 
 
                 if dE <= 0:
-                    curr_E = prop_E           # always accept lower energy
+                    currentE = proposedE           # always accept lower energy
                 else:
                     r = np.random.random()
                     if r < np.exp(-dE / T):
-                        curr_E = prop_E       # accept higher energy probabilistically
+                        currentE = proposedE       # accept higher energy probabilistically
                     else:
                         bs.flip_site(i)       # reject and flip spin 
 
-        E_samples = np.zeros(n_samples)
+        E_samples = np.zeros(n_samples)     # arrays to store samples 
         M_samples = np.zeros(n_samples)
 
-        for idx in range(n_samples):
+        for idx in range(n_samples):   # loop over samples 
             for i in range(self.N):
                 bs.flip_site(i)
-                prop_E = self.ham.energy(bs)
-                dE = prop_E - curr_E
+                proposedE = self.ham.energy(bs)   # same thing calculating proposed energy and comparing to current 
+                dE = proposedE - currentE
 
                 if dE <= 0:
-                    curr_E = prop_E
+                    currentE = proposedE
                 else:
                     r = np.random.random()
                     if r < np.exp(-dE / T):
