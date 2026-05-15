@@ -6,18 +6,16 @@ from .ising import IsingHamiltonian
 class MonteCarlo:
 
     def __init__(self, ham: IsingHamiltonian):
-        self.ham = ham       # store the Hamiltonian to call ham.energy()
+        self.ham = ham       # storing hamiltonian
         self.N = ham.N       # number of spin sites
 
     def run(self, T: float, n_samples: int, n_burn: int = 100):
         
-        # Initialize a random starting configuration
-        bs = BitString(self.N)
+        bs = BitString(self.N)   # random starting bitstring configuration 
         bs.set_config(list(np.random.randint(0, 2, self.N)))
         curr_E = self.ham.energy(bs)
 
-        # Burn-in phase: let system equilibrate, discard these steps
-        for _ in range(n_burn):
+        for _ in range(n_burn): # burning values that dont affect real probability 
             for i in range(self.N):
                 bs.flip_site(i)
                 prop_E = self.ham.energy(bs)
@@ -30,9 +28,8 @@ class MonteCarlo:
                     if r < np.exp(-dE / T):
                         curr_E = prop_E       # accept higher energy probabilistically
                     else:
-                        bs.flip_site(i)       # reject: flip back
+                        bs.flip_site(i)       # reject and flip spin 
 
-        # Sampling phase: record E and M at each step
         E_samples = np.zeros(n_samples)
         M_samples = np.zeros(n_samples)
 
@@ -49,9 +46,8 @@ class MonteCarlo:
                     if r < np.exp(-dE / T):
                         curr_E = prop_E
                     else:
-                        bs.flip_site(i)       # reject: flip back
+                        bs.flip_site(i)      
 
-            # Record current state after sweeping all sites
             E_samples[idx] = curr_E
             M_samples[idx] = bs.on() - bs.off()   # up spins minus down spins
 
